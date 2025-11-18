@@ -6,6 +6,7 @@ import torch
 from typing import List, Tuple, Optional, Literal, Union
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from joblib.externals.loky.backend.context import get_context
 
 from trident.segmentation_models.load import SegmentationModel
 from trident.wsi_objects.WSIPatcher import *
