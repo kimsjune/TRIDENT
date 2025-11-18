@@ -222,7 +222,7 @@ def run_task(processor: Processor, args: argparse.Namespace) -> None:
                 coords_dir=args.coords_dir or f'{args.mag}x_{args.patch_size}px_{args.overlap}px_overlap',
                 patch_encoder=encoder,
                 #device=f'cuda:{args.gpu}',
-                device=args.device
+                device=args.device,
                 saveas='h5',
                 batch_limit=args.feat_batch_size if args.feat_batch_size is not None else args.batch_size,
             )
