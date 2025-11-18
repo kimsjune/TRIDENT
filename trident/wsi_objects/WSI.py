@@ -318,7 +318,8 @@ class WSI:
             batch_size=batch_size, 
             collate_fn=collate_fn,
             num_workers=get_num_workers(batch_size, max_workers=self.max_workers) if num_workers is None else num_workers, 
-            pin_memory=True
+            pin_memory=True,
+            multiprocessing_context=get_context('loky')
         )
 
         mpp_reduction_factor = self.mpp / destination_mpp
@@ -818,14 +819,15 @@ class WSI:
 
 
         dataset = WSIPatcherDataset(patcher, patch_transforms)
-        dataloader = DataLoader(dataset, batch_size=batch_limit, num_workers=get_num_workers(batch_limit, max_workers=self.max_workers), pin_memory=False)
+        dataloader = DataLoader(dataset, batch_size=batch_limit, num_workers=get_num_workers(batch_limit, max_workers=self.max_workers), pin_memory=False,
+            multiprocessing_context=get_context('loky'))
 
         dataloader = tqdm(dataloader) if verbose else dataloader
 
         features = []
         for imgs, _ in dataloader:
             imgs = imgs.to(device)
-            with torch.autocast(device_type='cuda', dtype=precision, enabled=(precision != torch.float32)):
+            with torch.autocast(device_type=device.split(":")[0], dtype=precision, enabled=(precision != torch.float32)):
                 batch_features = patch_encoder(imgs)  
             features.append(batch_features.cpu().numpy())
 
@@ -936,7 +938,7 @@ class WSI:
         }
 
         # Generate slide-level features
-        with torch.autocast(device_type='cuda', enabled=(slide_encoder.precision != torch.float32)):
+        with torch.autocast(device_type=device.split(":")[0], enabled=(slide_encoder.precision != torch.float32)):
             features = slide_encoder(batch, device)
         features = features.float().cpu().numpy().squeeze()
 
