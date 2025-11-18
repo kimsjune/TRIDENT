@@ -3,11 +3,10 @@ import numpy as np
 import os 
 import warnings
 import torch
-import joblib
 from typing import List, Tuple, Optional, Literal, Union
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from joblib.externals.loky.backend.context import get_context
+import multiprocessing as mp
 
 from trident.segmentation_models.load import SegmentationModel
 from trident.wsi_objects.WSIPatcher import *
@@ -320,8 +319,7 @@ class WSI:
             batch_size=batch_size, 
             collate_fn=collate_fn,
             num_workers=get_num_workers(batch_size, max_workers=self.max_workers) if num_workers is None else num_workers, 
-            pin_memory=True,
-            multiprocessing_context=get_context('loky')
+            pin_memory=True
         )
 
         mpp_reduction_factor = self.mpp / destination_mpp
@@ -821,8 +819,7 @@ class WSI:
 
 
         dataset = WSIPatcherDataset(patcher, patch_transforms)
-        dataloader = DataLoader(dataset, batch_size=batch_limit, num_workers=get_num_workers(batch_limit, max_workers=self.max_workers), pin_memory=False,
-            multiprocessing_context=get_context('loky'))
+        dataloader = DataLoader(dataset, batch_size=batch_limit, num_workers=get_num_workers(batch_limit, max_workers=self.max_workers), pin_memory=False)
 
         dataloader = tqdm(dataloader) if verbose else dataloader
 
@@ -988,3 +985,7 @@ class WSI:
         import torch
         gc.collect()
         torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+    mp.set_start_method("spawn", force=True)
