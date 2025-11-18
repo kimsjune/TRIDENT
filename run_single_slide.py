@@ -76,7 +76,8 @@ def process_slide(args):
         segmentation_model=segmentation_model,
         target_mag=segmentation_model.target_mag,
         job_dir=args.job_dir,
-        device=f"cuda:{args.gpu}",
+        #device=f"cuda:{args.gpu}",
+        device=args.device,
         holes_are_tissue=not args.remove_holes
     )
     # additionally remove artifacts for better segmentation.
@@ -111,13 +112,15 @@ def process_slide(args):
     print("Extracting features from patches...")
     encoder = encoder_factory(args.patch_encoder)
     encoder.eval()
-    encoder.to(f"cuda:{args.gpu}")
+    #encoder.to(f"cuda:{args.gpu}")
+    encoder.to(args.device)
     features_path = features_dir = os.path.join(save_coords, "features_{}".format(args.patch_encoder))
     slide.extract_patch_features(
         patch_encoder=encoder,
         coords_path=os.path.join(save_coords, 'patches', f'{slide.name}_patches.h5'),
         save_features=features_dir,
-        device=f"cuda:{args.gpu}",
+        #device=f"cuda:{args.gpu}",
+        device=args.device,
         batch_limit=args.batch_size
     )
     print(f"Feature extraction completed. Results saved to {features_path}")
@@ -126,6 +129,34 @@ def process_slide(args):
 def main():
     args = parse_arguments()
     process_slide(args)
+    # ensure cuda is available
+
+
+
+    if torch.cuda.is_available():
+
+
+        args.device = f"cuda:{args.gpu}"
+
+
+
+
+
+    elif torch.backends.mps.is_available():
+
+
+        args.device = "mps"
+
+
+
+
+
+    else:
+
+
+        args.device = "cpu"
+
+
 
 
 if __name__ == "__main__":
