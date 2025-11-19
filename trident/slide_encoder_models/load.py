@@ -179,7 +179,7 @@ class ABMILSlideEncoder(BaseSlideEncoder):
         embedding_dim = input_feature_dim
         return model, precision, embedding_dim
 
-    def forward(self, batch, device='mps, return_raw_attention=False):
+    def forward(self, batch, device='mps', return_raw_attention=False):
         image_features = self.model['pre_attention_layers'](batch['features'].to(device))
         image_features, attn = self.model['image_pooler'](image_features) # Features shape: (b n_branches f), where n_branches = 1. Branching is not used in this implementation.
         image_features = rearrange(image_features, 'b 1 f -> b f')
@@ -224,7 +224,7 @@ class PRISMSlideEncoder(BaseSlideEncoder):
         embedding_dim = 1280
         return model, precision, embedding_dim
     
-    def forward(self, batch, device='mps):
+    def forward(self, batch, device='mps'):
         # input should be of shape (batch_size, tile_seq_len, tile_embed_dim)
         x = batch['features'].to(device)
         z = self.model.slide_representations(x)
@@ -304,7 +304,7 @@ class CHIEFSlideEncoder(BaseSlideEncoder):
         embedding_dim = 768
         return model, precision, embedding_dim
     
-    def forward(self, batch, device='mps):
+    def forward(self, batch, device='mps'):
         x = batch['features'].squeeze(0).to(device)
         z = self.model(x, torch.tensor([0]))
         z = z['WSI_feature']  # Shape (1,768)
@@ -346,7 +346,7 @@ class GigaPathSlideEncoder(BaseSlideEncoder):
         embedding_dim = 768
         return model, precision, embedding_dim
 
-    def forward(self, batch, device='mps):
+    def forward(self, batch, device='mps'):
         self.model.tile_size = batch['attributes']['patch_size_level0']
         z = self.model(batch['features'].to(device), batch['coords'].to(device), all_layer_embed=True)[11]
         return z
@@ -378,7 +378,7 @@ class MadeleineSlideEncoder(BaseSlideEncoder):
 
         return model, precision, embedding_dim
     
-    def forward(self, x, device='mps):
+    def forward(self, x, device='mps'):
         z = self.model.encode_he(x['features'], device)
         return z
 
@@ -403,7 +403,7 @@ class ThreadsSlideEncoder(BaseSlideEncoder):
         
         return None, None, None
 
-    def forward(self, batch, device='mps, return_raw_attention=False):
+    def forward(self, batch, device='mps', return_raw_attention=False):
         pass
 
 
@@ -424,7 +424,7 @@ class TitanSlideEncoder(BaseSlideEncoder):
         embedding_dim = 768
         return model, precision, embedding_dim
 
-    def forward(self, batch, device='mps):
+    def forward(self, batch, device='mps'):
         z = self.model.encode_slide_from_patch_features(batch['features'].to(device), batch['coords'].to(device), batch['attributes']['patch_size_level0'])        
         return z
     
@@ -454,7 +454,7 @@ class FeatherSlideEncoder(BaseSlideEncoder):
 
         return model, precision, embedding_dim
     
-    def forward(self, batch, device='mps):
+    def forward(self, batch, device='mps'):
         z, _ = self.model.forward_features(batch['features'].to(device))
         return z
 
@@ -516,7 +516,7 @@ class MeanSlideEncoder(BaseSlideEncoder):
             
         return None, None, embedding_dim
 
-    def forward(self, batch, device='mps):
+    def forward(self, batch, device='mps'):
         z = batch['features'].to(device).mean(dim=1) # Just mean pooling
         return z
 
