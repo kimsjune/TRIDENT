@@ -7,6 +7,7 @@ python run_single_slide.py --slide_path output/wsis/394140.svs --job_dir output/
 
 """
 import argparse
+import torch
 import os
 
 from trident import load_wsi
