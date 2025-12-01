@@ -128,7 +128,7 @@ def process_slide(args):
 
 def main():
     args = parse_arguments()
-    process_slide(args)
+    
     # ensure cuda is available
 
 
@@ -157,7 +157,7 @@ def main():
         args.device = "cpu"
 
 
-
+    process_slide(args)
 
 if __name__ == "__main__":
     main()
